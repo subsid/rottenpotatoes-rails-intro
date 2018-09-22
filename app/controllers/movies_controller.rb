@@ -11,11 +11,38 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @sorted_by = params[:order]
     @all_ratings = Movie.get_ratings
-    @filtered_ratings = params[:ratings] ? params[:ratings].keys : @all_ratings
+    ratings_hash = Hash[@all_ratings.map {|r| [r, 1]}]
+
+    # If session params are used, then send them as params to maintain RESTfulness
+    redirect = false
+    redirect_params = {}
+
+    if (params[:order].nil? and !session[:order].nil?)
+      redirect = true
+      redirect_params = redirect_params.merge({ order: session[:order] })
+    end
+
+    if (params[:ratings].nil? and !session[:ratings].nil?)
+      redirect = true
+      redirect_params = redirect_params.merge({ ratings: session[:ratings] })
+    end
+
+    if redirect
+      redirect_params = redirect_params
+        .merge(params[:order] ? { order: params[:order] } : {})
+        .merge(params[:ratings] ? { ratings: params[:ratings] } : {})
+      flash.keep
+      redirect_to movies_path redirect_params
+    end
+
+    session[:order] = params[:order]
+    session[:ratings] = params[:ratings] || ratings_hash
+
+    @sorted_by = params[:order]
+    @filtered_ratings = session[:ratings].keys()
     @movies_filtered = Movie.where(:rating => @filtered_ratings)
-    @movies = params[:order] ? @movies_filtered.order(params[:order]) : @movies_filtered
+    @movies = session[:order] ? @movies_filtered.order(session[:order]) : @movies_filtered
   end
 
   def new
