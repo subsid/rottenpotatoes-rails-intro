@@ -73,4 +73,11 @@ class MoviesController < ApplicationController
     redirect_to movies_path
   end
 
+  def movies_by_director
+    @movies_by_director = Movie.movies_by_director(params[:title])
+    if @movies_by_director.nil?
+      redirect_to root_url, alert: "'#{params[:title]}' has no director info"
+    end
+    @movie = Movie.find_by(title: params[:title])
+  end
 end
