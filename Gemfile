@@ -56,6 +56,10 @@ group :development, :test do
 
 end
 
+group :test do
+  gem 'simplecov', :require => false
+end
+
 group :development do
   gem 'web-console', '~> 2.0'
 end
